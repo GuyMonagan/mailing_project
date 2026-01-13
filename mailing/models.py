@@ -66,3 +66,17 @@ class Attempt(models.Model):
     def __str__(self):
         return f"{self.mailing} — {self.status} at {self.attempt_time}"
 
+
+class Recipient(models.Model):
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=255)
+    comment = models.TextField(blank=True, null=True)
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recipients'
+    )
+
+    def __str__(self):
+        return f'{self.full_name} ({self.email})'
