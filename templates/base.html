@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mailing Service{% endblock %}</title>
+
+    <!-- Подключаем Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header, nav {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        nav a, nav form {
+            display: inline;
+            margin-right: 15px;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+        }
+        nav button {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            padding: 0;
+        }
+        main {
+            padding: 20px;
+        }
+        .messages {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background-color: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mailing Service</h1>
+    </header>
+
+    <nav>
+        {% if user.is_authenticated %}
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Аватар" style="height: 40px; border-radius: 50%; vertical-align: middle;">
+            {% endif %}
+            <span>Вы вошли как {{ user.email }}</span>
+
+            <a href="{% url 'mailing:recipient_list' %}">Получатели</a>
+            <a href="{% url 'mailing:message-list' %}">Сообщения</a>
+            <a href="{% url 'mailing:mailing-list' %}">Рассылки</a>
+            <a href="{% url 'mailing:attempt-list' %}">Попытки</a>
+
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Выйти</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Войти</a>
+            <a href="{% url 'users:register' %}">Регистрация</a>
+        {% endif %}
+    </nav>
+
+    <main>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Подключаем Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        flatpickr("input[type=datetime-local]", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            locale: "ru"
+        });
+    </script>
+</body>
+</html>

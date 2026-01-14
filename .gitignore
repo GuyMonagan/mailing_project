@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Django
+*.sqlite3
+*.pyc
+media/
+
+.env.*
+.idea/
+
+# VSCode / PyCharm
+*.code-workspace
+*.iml
+.vscode/
+
+# Poetry artifacts
+poetry.lock

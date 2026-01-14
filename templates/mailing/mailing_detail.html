@@ -1,0 +1,17 @@
+{# templates/mailing/mailing_detail.html #}
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Информация о рассылке</h2>
+
+  <p><strong>ID:</strong> {{ object.id }}</p>
+  <p><strong>Сообщение:</strong> {{ object.message }}</p>
+  <p><strong>Получатели:</strong>
+    <ul>
+      {% for recipient in object.recipients.all %}
+        <li>{{ recipient }}</li>
+      {% endfor %}
+    </ul>
+  </p>
+  <p><strong>Период:</strong> {{ object.start_time }} — {{ object.end_time }}</p>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Сообщения{% endblock %}
+{% block content %}
+    <h2>Мои сообщения</h2>
+    <a href="{% url 'mailing:message-create' %}">Создать новое сообщение</a>
+    <ul>
+        {% for message in object_list %}
+            <li>
+                <strong>{{ message.subject }}</strong>
+                —
+                <a href="{% url 'mailing:message-update' message.pk %}">Изменить</a>
+                |
+                <a href="{% url 'mailing:message-delete' message.pk %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
