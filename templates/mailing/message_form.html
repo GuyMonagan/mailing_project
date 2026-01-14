@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ form.instance.pk|yesno:"Изменить сообщение,Создать сообщение" }}{% endblock %}
+{% block content %}
+    <h2>{{ form.instance.pk|yesno:"Изменить сообщение,Создать сообщение" }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Сохранить</button>
+    </form>
+{% endblock %}

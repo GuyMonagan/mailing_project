@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Client, Message, Mailing, Attempt
+from .models import Recipient, Message, Mailing, Attempt
 
 
-@admin.register(Client)
-class ClientAdmin(admin.ModelAdmin):
+@admin.register(Recipient)
+class RecipientAdmin(admin.ModelAdmin):
     list_display = ('email', 'full_name', 'owner')
     search_fields = ('email', 'full_name')
     list_filter = ('owner',)

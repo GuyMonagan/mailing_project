@@ -3,14 +3,19 @@ from django.conf import settings
 from django.utils import timezone
 
 
-class Client(models.Model):
+class Recipient(models.Model):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
-    comment = models.TextField(blank=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    comment = models.TextField(blank=True, null=True)
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recipients'
+    )
 
     def __str__(self):
-        return f"{self.full_name} ({self.email})"
+        return f'{self.full_name} ({self.email})'
 
 
 class Message(models.Model):
@@ -33,23 +38,27 @@ class Mailing(models.Model):
     end_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Создана')
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
-    recipients = models.ManyToManyField(Client)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    recipients = models.ManyToManyField(Recipient)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='mailings'
+    )
 
     def update_status(self):
         now = timezone.now()
+
         if now < self.start_time:
-            new_status = 'Создана'
+            self.status = 'Создана'
         elif self.start_time <= now <= self.end_time:
-            new_status = 'Запущена'
+            self.status = 'Запущена'
         else:
-            new_status = 'Завершена'
-        if self.status != new_status:
-            self.status = new_status
-            self.save()
+            self.status = 'Завершена'
+
+        self.save()
 
     def __str__(self):
-        return f"Рассылка {self.id} — {self.status}"
+        return f"{self.message.subject} ({self.status})"
 
 
 class Attempt(models.Model):
@@ -65,18 +74,3 @@ class Attempt(models.Model):
 
     def __str__(self):
         return f"{self.mailing} — {self.status} at {self.attempt_time}"
-
-
-class Recipient(models.Model):
-    email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255)
-    comment = models.TextField(blank=True, null=True)
-
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='recipients'
-    )
-
-    def __str__(self):
-        return f'{self.full_name} ({self.email})'

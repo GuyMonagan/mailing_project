@@ -3,8 +3,31 @@
 {% block content %}
   <h2>Регистрация</h2>
   <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Зарегистрироваться</button>
+      {% csrf_token %}
+      <p>
+          {{ form.email.label_tag }}<br>
+          {{ form.email }}
+      </p>
+      <p>
+          {{ form.phone.label_tag }}<br>
+          {{ form.phone }}
+      </p>
+      <p>
+          {{ form.country.label_tag }}<br>
+          {{ form.country }}
+      </p>
+      <p>
+          {{ form.avatar.label_tag }}<br>
+          {{ form.avatar }}
+      </p>
+      <p>
+          {{ form.password1.label_tag }}<br>
+          {{ form.password1 }}
+      </p>
+      <p>
+          {{ form.password2.label_tag }}<br>
+          {{ form.password2 }}
+      </p>
+      <button type="submit">Зарегистрироваться</button>
   </form>
 {% endblock %}

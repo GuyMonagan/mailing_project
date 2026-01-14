@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Попытки отправки{% endblock %}
+
+{% block content %}
+  <h2>Попытки отправки</h2>
+
+  {% if object_list %}
+    <table>
+      <thead>
+        <tr>
+          <th>Рассылка</th>
+          <th>Статус</th>
+          <th>Ответ сервера</th>
+          <th>Время</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for attempt in object_list %}
+          <tr>
+            <td>{{ attempt.mailing }}</td>
+            <td>{{ attempt.status }}</td>
+            <td>{{ attempt.server_response }}</td>
+            <td>{{ attempt.attempt_time|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Пока нет ни одной попытки отправки.</p>
+  {% endif %}
+{% endblock %}

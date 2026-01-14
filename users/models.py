@@ -19,16 +19,16 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        if extra_fields.get("is_staff") is not True:
+        if not extra_fields.get("is_staff"):
             raise ValueError("Суперпользователь должен быть is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
+        if not extra_fields.get("is_superuser"):
             raise ValueError("Суперпользователь должен быть is_superuser=True.")
 
         return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
-    username = None  # Удаляем username
+    username = None  # Удаляем стандартное поле username
     email = models.EmailField(unique=True, verbose_name="Email")
 
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True, verbose_name="Аватар")
@@ -36,7 +36,7 @@ class User(AbstractUser):
     country = models.CharField(max_length=100, blank=True, verbose_name="Страна")
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = []  # Без дополнительных обязательных полей для superuser'а
 
     objects = UserManager()
 

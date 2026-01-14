@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Список рассылок{% endblock %}
+
+{% block content %}
+  <h2>Ваши рассылки</h2>
+
+  <a href="{% url 'mailing:mailing-create' %}">Создать новую рассылку</a>
+
+  {% if object_list %}
+    <ul>
+      {% for mailing in object_list %}
+        <li>
+          <strong>{{ mailing.message.subject }}</strong>
+          — {{ mailing.status }}<br>
+          {{ mailing.start_time|date:"Y-m-d H:i" }} — {{ mailing.end_time|date:"Y-m-d H:i" }}<br>
+          <a href="{% url 'mailing:mailing-detail' mailing.pk %}">Подробнее</a> |
+          <a href="{% url 'mailing:mailing-update' mailing.pk %}">Редактировать</a> |
+          <a href="{% url 'mailing:mailing-delete' mailing.pk %}">Удалить</a> |
+          <form action="{% url 'mailing:mailing-launch' mailing.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Запустить</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>У вас пока нет созданных рассылок.</p>
+  {% endif %}
+{% endblock %}

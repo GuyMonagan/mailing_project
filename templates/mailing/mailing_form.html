@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{% if object %}Редактировать рассылку{% else %}Создать рассылку{% endif %}</h2>
+
+  {% if form.errors %}
+    <ul class="form-errors" style="color: red; list-style: none;">
+      {% for field, errors in form.errors.items %}
+        <li><strong>{{ field.label }}:</strong> {{ errors|join:", " }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <p>
+      {{ form.start_time.label_tag }}
+      {{ form.start_time }}
+    </p>
+
+    <p>
+      {{ form.end_time.label_tag }}
+      {{ form.end_time }}
+    </p>
+
+    <p><small style="color: gray;">* Время указывается по Москве (UTC+3)</small></p>
+
+    <p>
+      {{ form.message.label_tag }}
+      {{ form.message }}
+    </p>
+
+    <p>
+      {{ form.recipients.label_tag }}
+      {{ form.recipients }}
+      <br><small style="color: gray;">Зажмите <strong>Ctrl</strong> (или <strong>Cmd</strong> на Mac), чтобы выбрать несколько получателей.</small>
+    </p>
+
+    <button type="submit">Сохранить</button>
+  </form>
+
+  <!-- Flatpickr: инициализация -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    flatpickr("#id_start_time", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      time_24hr: true
+    });
+
+    flatpickr("#id_end_time", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      time_24hr: true
+    });
+  </script>
+{% endblock %}
