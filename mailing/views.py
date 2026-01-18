@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
 import pytz
+from django.views.generic import TemplateView
 
 from .models import Message, Mailing, Attempt
 from .models import Recipient
@@ -129,11 +130,10 @@ class LaunchMailingView(LoginRequiredMixin, View):
         moscow_tz = pytz.timezone("Europe/Moscow")
         now = timezone.now().astimezone(moscow_tz)
 
-        # Приводим даты из формы тоже к московскому времени, чтобы сравнение было честным
+        # Приводим даты из формы тоже к московскому времени
         start_time = mailing.start_time.astimezone(moscow_tz)
         end_time = mailing.end_time.astimezone(moscow_tz)
 
-        # Проверка интервала
         if start_time <= now <= end_time:
             for recipient in mailing.recipients.all():
                 try:
@@ -144,30 +144,29 @@ class LaunchMailingView(LoginRequiredMixin, View):
                         [recipient.email],
                         fail_silently=False,
                     )
-
                     Attempt.objects.create(
                         mailing=mailing,
+                        recipient=recipient,  # <-- вот это ключ
                         status='Успешно',
                         server_response='OK'
                     )
-
                 except Exception as e:
                     Attempt.objects.create(
                         mailing=mailing,
+                        recipient=recipient,  # <-- и тут не забудь
                         status='Не успешно',
                         server_response=str(e)
                     )
-
             messages.success(request, 'Рассылка запущена.')
-
         else:
-            # <--- ВАЖНО: фиксируем неуспешную попытку
-            Attempt.objects.create(
-                mailing=mailing,
-                status='Не успешно',
-                server_response='Вне временного интервала'
-            )
-
+            # Тут мы должны логировать попытки по каждому получателю
+            for recipient in mailing.recipients.all():
+                Attempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,  # <-- и тут тоже
+                    status='Не успешно',
+                    server_response='Рассылка вне допустимого временного интервала'
+                )
             messages.error(request, 'Рассылка вне допустимого временного интервала.')
 
         return redirect('mailing:mailing-detail', pk=pk)
@@ -209,3 +208,22 @@ class RecipientDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Recipient.objects.filter(owner=self.request.user)
+
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = "home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context['message_count'] = Message.objects.filter(owner=user).count()
+        context['recipient_count'] = Recipient.objects.filter(owner=user).count()
+        context['mailing_count'] = Mailing.objects.filter(owner=user).count()
+        context['attempt_count'] = Attempt.objects.filter(mailing__owner=user).count()
+
+        context['has_no_messages'] = context['message_count'] == 0
+        context['has_no_recipients'] = context['recipient_count'] == 0
+        context['has_no_mailings'] = context['mailing_count'] == 0
+
+        return context

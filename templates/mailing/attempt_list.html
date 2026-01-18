@@ -12,6 +12,7 @@
           <th>Рассылка</th>
           <th>Статус</th>
           <th>Ответ сервера</th>
+          <th>Получатель</th>
           <th>Время</th>
         </tr>
       </thead>
@@ -21,6 +22,7 @@
             <td>{{ attempt.mailing }}</td>
             <td>{{ attempt.status }}</td>
             <td>{{ attempt.server_response }}</td>
+            <td>{{ attempt.recipient.email }}</td>
             <td>{{ attempt.attempt_time|date:"Y-m-d H:i" }}</td>
           </tr>
         {% endfor %}
