@@ -1,5 +1,6 @@
 from django.urls import path
 from django.views.generic import TemplateView
+from .views import HomeView
 from . import views
 from .views import (
     MessageListView, MessageCreateView, MessageUpdateView, MessageDeleteView,
@@ -17,8 +18,6 @@ from .views import (
 app_name = 'mailing'
 
 urlpatterns = [
-
-    path('', TemplateView.as_view(template_name="home.html"), name='home'),
 
     # RECIPIENTS
     path('recipients/', RecipientListView.as_view(), name='recipient_list'),
@@ -49,4 +48,6 @@ urlpatterns = [
 
     # ATTEMPTS
     path('attempts/', AttemptListView.as_view(), name='attempt-list'),
+
+    path('', HomeView.as_view(), name='home'),
 ]

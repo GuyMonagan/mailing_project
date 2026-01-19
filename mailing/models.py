@@ -71,6 +71,7 @@ class Attempt(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     server_response = models.TextField()
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE)
+    recipient = models.ForeignKey('Recipient', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.mailing} — {self.status} at {self.attempt_time}"
