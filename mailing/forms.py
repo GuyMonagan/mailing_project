@@ -4,6 +4,12 @@ from django.forms.widgets import DateTimeInput
 
 
 class MailingForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования рассылок.
+
+    Отображает поля: время начала, время окончания, сообщение и получатели.
+    Использует HTML5-виджеты для выбора даты и времени, а также множественный выбор для получателей.
+    """
     class Meta:
         model = Mailing
         fields = ['start_time', 'end_time', 'message', 'recipients']

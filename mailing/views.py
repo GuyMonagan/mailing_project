@@ -6,19 +6,23 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from django.utils.timezone import now
 import pytz
 from django.views.generic import TemplateView
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-from django.views import View
-from django.shortcuts import redirect
 
 from .models import Message, Mailing, Attempt
 from .models import Recipient
 
+from django.views.decorators.cache import cache_page
+
 
 class OwnerOrManagerMixin:
+    """
+    Миксин для ограничения видимости объектов в зависимости от пользователя.
+
+    Менеджеры видят все объекты.
+    Обычные пользователи — только свои (по полю owner).
+    """
     owner_lookup = "owner"
 
     def get_queryset(self):
@@ -34,6 +38,11 @@ class OwnerOrManagerMixin:
 
 
 class ManagerForbiddenMixin:
+    """
+    Миксин, запрещающий доступ менеджерам к определённым вьюхам.
+
+    Если пользователь в группе 'Менеджеры', вызывает handle_no_permission().
+    """
     def dispatch(self, request, *args, **kwargs):
         if request.user.groups.filter(name="Менеджеры").exists():
             return self.handle_no_permission()
@@ -41,6 +50,13 @@ class ManagerForbiddenMixin:
 
 
 class ToggleMailingStatusView(LoginRequiredMixin, View):
+    """
+    Вьюха для переключения статуса активности рассылки.
+
+    Доступна только менеджерам.
+    Меняет поле is_active и выводит сообщение об успешном переключении.
+    После действия выполняет редирект.
+    """
     def post(self, request, pk):
         user = request.user
         if not user.groups.filter(name="Менеджеры").exists():
@@ -64,11 +80,22 @@ class ToggleMailingStatusView(LoginRequiredMixin, View):
 # -------- MESSAGE --------
 
 class MessageListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    """
+    Список сообщений рассылки.
+
+    Менеджеры видят все сообщения.
+    Обычные пользователи — только свои.
+    """
     model = Message
     template_name = 'mailing/message_list.html'
 
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
+    """
+    Создание нового сообщения рассылки.
+
+    При сохранении привязывает сообщение к текущему пользователю.
+    """
     model = Message
     fields = ['subject', 'body']
     template_name = 'mailing/message_form.html'
@@ -80,6 +107,12 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
 
 
 class MessageUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, UpdateView):
+    """
+    Изменение существующего сообщения рассылки.
+
+    Менеджерам редактирование запрещено.
+    Обычные пользователи могут изменять только свои.
+    """
     model = Message
     fields = ['subject', 'body']
     template_name = 'mailing/message_form.html'
@@ -87,6 +120,12 @@ class MessageUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 
 
 class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, DeleteView):
+    """
+    Удаление сообщения рассылки.
+
+    Менеджерам удаление запрещено.
+    Обычные пользователи могут удалять только свои.
+    """
     model = Message
     template_name = 'mailing/message_confirm_delete.html'
     success_url = reverse_lazy('mailing:message-list')
@@ -95,6 +134,12 @@ class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 # -------- MAILING --------
 
 class MailingListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    """
+    Список всех рассылок.
+
+    Менеджеры видят все, пользователи — только свои.
+    В контекст передаётся флаг is_manager.
+    """
     model = Mailing
     template_name = 'mailing/mailing_list.html'
 
@@ -106,6 +151,12 @@ class MailingListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
 
 
 class MailingDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    """
+    Детали конкретной рассылки.
+
+    Обновляет статус рассылки при открытии.
+    Добавляет флаг is_manager в контекст.
+    """
     model = Mailing
     template_name = 'mailing/mailing_detail.html'
 
@@ -121,6 +172,13 @@ class MailingDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
 
 
 class MailingStatsView(LoginRequiredMixin, DetailView):
+    """
+    Статистика по конкретной рассылке.
+
+    Отображает статус последней попытки по каждому получателю.
+    Считает общее количество успешных и неуспешных попыток.
+    Менеджеры видят все, пользователи — только свои рассылки.
+    """
     model = Mailing
     template_name = 'mailing/mailing_stats.html'
     context_object_name = 'mailing'
@@ -150,6 +208,11 @@ class MailingStatsView(LoginRequiredMixin, DetailView):
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
+    """
+    Создание новой рассылки.
+
+    Привязывает рассылку к текущему пользователю.
+    """
     model = Mailing
     fields = ['start_time', 'end_time', 'message', 'recipients']
     template_name = 'mailing/mailing_form.html'
@@ -161,6 +224,12 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
 
 class MailingUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, UpdateView):
+    """
+    Редактирование рассылки.
+
+    Менеджерам запрещено редактировать.
+    Пользователи могут редактировать только свои рассылки.
+    """
     model = Mailing
     fields = ['start_time', 'end_time', 'message', 'recipients']
     template_name = 'mailing/mailing_form.html'
@@ -168,6 +237,12 @@ class MailingUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 
 
 class MailingDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, DeleteView):
+    """
+    Удаление рассылки.
+
+    Менеджерам удаление запрещено.
+    Пользователи могут удалять только свои рассылки.
+    """
     model = Mailing
     template_name = 'mailing/mailing_confirm_delete.html'
     success_url = reverse_lazy('mailing:mailing-list')
@@ -176,6 +251,12 @@ class MailingDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 # -------- ATTEMPT --------
 
 class AttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    """
+    Список попыток отправки сообщений (Attempt).
+
+    Показывает только те попытки, которые относятся к рассылкам текущего пользователя.
+    Менеджеры видят всё.
+    """
     model = Attempt
     template_name = 'mailing/attempt_list.html'
     owner_lookup = "mailing__owner"
@@ -184,6 +265,14 @@ class AttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
 # -------- MAILING LAUNCH --------
 
 class LaunchMailingView(LoginRequiredMixin, View):
+    """
+    Ручной запуск рассылки пользователем.
+
+    - Менеджерам запуск запрещён.
+    - Запрещает запуск неактивных рассылок.
+    - Отправляет письма получателям, если текущее время в допустимом интервале.
+    - Создаёт записи Attempt для всех попыток (успешных и неуспешных).
+    """
     def post(self, request, pk):
         user = request.user
 
@@ -251,11 +340,21 @@ class LaunchMailingView(LoginRequiredMixin, View):
 
 # -------- RECIPIENT --------
 class RecipientListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    """
+    Список получателей рассылки.
+
+    Менеджеры видят всех, пользователи — только своих.
+    """
     model = Recipient
     template_name = 'mailing/recipient_list.html'
 
 
 class RecipientCreateView(LoginRequiredMixin, CreateView):
+    """
+    Создание нового получателя рассылки.
+
+    Автоматически назначает текущего пользователя как владельца.
+    """
     model = Recipient
     fields = ['email', 'full_name', 'comment']
     template_name = 'mailing/recipient_form.html'
@@ -267,6 +366,12 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
 
 
 class RecipientUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, UpdateView):
+    """
+    Редактирование получателя.
+
+    Менеджерам изменение запрещено.
+    Пользователи могут редактировать только своих получателей.
+    """
     model = Recipient
     fields = ['email', 'full_name', 'comment']
     template_name = 'mailing/recipient_form.html'
@@ -274,13 +379,26 @@ class RecipientUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbid
 
 
 class RecipientDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbiddenMixin, DeleteView):
+    """
+    Удаление получателя.
+
+    Менеджерам удаление запрещено.
+    Пользователи могут удалять только своих.
+    """
     model = Recipient
     template_name = 'mailing/recipient_confirm_delete.html'
     success_url = reverse_lazy('mailing:recipient_list')
 
 
 # ------- OTHER -------
+@method_decorator(cache_page(60 * 15), name='dispatch')  # 15 минут
 class HomeView(LoginRequiredMixin, TemplateView):
+    """
+    Домашняя страница пользователя с общей статистикой.
+
+    Показывает количество сообщений, получателей, рассылок и попыток.
+    Кэшируется на 15 минут.
+    """
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):

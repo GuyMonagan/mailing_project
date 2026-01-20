@@ -4,7 +4,15 @@ from mailing.models import Mailing, Attempt
 from django.core.mail import send_mail
 from django.conf import settings
 
+
 class Command(BaseCommand):
+    """
+    Команда для отправки всех активных рассылок, у которых текущая дата попадает в указанный интервал.
+
+    Для каждой валидной рассылки отправляет сообщение всем её получателям.
+    Записывает успешные и неуспешные попытки в модель Attempt.
+    Пропускает рассылки вне временного интервала и логирует ошибки.
+    """
     help = 'Отправка всех активных рассылок (если текущая дата в пределах интервала)'
 
     def handle(self, *args, **kwargs):

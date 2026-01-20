@@ -1,7 +1,14 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
 
+
 class Command(BaseCommand):
+    """
+    Команда для создания группы 'Менеджеры' с предустановленными правами.
+
+    Добавляет группе доступ к просмотру всех рассылок, сообщений и получателей,
+    а также право отключать рассылки.
+    """
     help = "Создает группу Менеджеры с нужными правами"
 
     def handle(self, *args, **kwargs):
