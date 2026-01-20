@@ -4,6 +4,8 @@
 {% block content %}
   <h2>Информация о рассылке</h2>
 
+  <p><strong>Статус:</strong> {% if mailing.is_active %}Активна{% else %}Отключена{% endif %}</p>
+
   <p><strong>ID:</strong> {{ object.id }}</p>
   <p><strong>Сообщение:</strong> {{ object.message }}</p>
   <p><strong>Получатели:</strong>
@@ -14,4 +16,17 @@
     </ul>
   </p>
   <p><strong>Период:</strong> {{ object.start_time }} — {{ object.end_time }}</p>
+  <p><a href="{% url 'mailing:mailing-stats' object.pk %}">Посмотреть статистику</a></p>
+
+  {% if is_manager %}
+    <form method="post" action="{% url 'mailing:mailing-toggle-status' mailing.pk %}?next={% url 'mailing:mailing-detail' mailing.pk %}" style="display:inline;">
+      {% csrf_token %}
+      {% if object.is_active %}
+        <button type="submit" style="background-color: #dc3545; color: white;">Отключить рассылку</button>
+      {% else %}
+        <button type="submit" style="background-color: #28a745; color: white;">Включить рассылку</button>
+      {% endif %}
+    </form>
+  {% endif %}
+
 {% endblock %}

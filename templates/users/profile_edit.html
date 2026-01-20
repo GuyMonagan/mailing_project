@@ -7,4 +7,10 @@
     {{ form.as_p }}
     <button type="submit">Сохранить</button>
   </form>
+
+  <hr>
+
+  <p>
+    <a href="{% url 'password_change' %}">Сменить пароль</a>
+  </p>
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика рассылки{% endblock %}
+
+{% block content %}
+  <h2>Статистика по рассылке: "{{ mailing.message.subject }}"</h2>
+
+  <p><strong>Период:</strong> {{ mailing.start_time }} — {{ mailing.end_time }}</p>
+  <p><strong>Статус:</strong> {{ mailing.status }}</p>
+
+  <h3>Получатели:</h3>
+  <ul>
+    {% for recipient, status in recipient_status.items %}
+      <li>{{ recipient.email }} — <strong>{{ status }}</strong></li>
+    {% endfor %}
+  </ul>
+
+  <p><strong>Итого:</strong></p>
+  <ul>
+    <li>Успешно: {{ success_count }}</li>
+    <li>Не успешно: {{ fail_count }}</li>
+  </ul>
+
+  <a href="{% url 'mailing:mailing-list' %}">← Назад к списку рассылок</a>
+{% endblock %}

@@ -7,6 +7,11 @@ User = get_user_model()
 
 
 class EmailAuthenticationForm(AuthenticationForm):
+    """
+    Форма аутентификации по email вместо username.
+
+    Использует поле email как идентификатор пользователя.
+    """
     username = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True}))
 
     def confirm_login_allowed(self, user):
@@ -14,6 +19,12 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 
 class CustomUserCreationForm(UserCreationForm):
+    """
+    Кастомная форма регистрации пользователя.
+
+    Поля: email, телефон, страна, аватар и пароль.
+    Устанавливает email как username.
+    """
     email = forms.EmailField(required=True)
 
     class Meta:

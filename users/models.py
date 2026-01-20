@@ -3,6 +3,13 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """
+    Кастомный менеджер пользователей с авторизацией по email.
+
+    Методы:
+        - create_user: создаёт обычного пользователя.
+        - create_superuser: создаёт суперпользователя с необходимыми флагами.
+    """
     use_in_migrations = True
 
     def create_user(self, email, password=None, **extra_fields):
@@ -28,6 +35,14 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    """
+    Кастомная модель пользователя с авторизацией по email.
+
+    Удаляет поле username.
+    Добавляет email (уникальный), аватар, телефон и страну.
+
+    Авторизация через email.
+    """
     username = None  # Удаляем стандартное поле username
     email = models.EmailField(unique=True, verbose_name="Email")
 

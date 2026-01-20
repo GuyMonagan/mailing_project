@@ -20,7 +20,6 @@ from django.contrib.auth import views as auth_views
 from users.forms import EmailAuthenticationForm
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
