@@ -5,7 +5,7 @@ from . import views
 from .views import (
     MessageListView, MessageCreateView, MessageUpdateView, MessageDeleteView,
     MailingListView, MailingDetailView, MailingCreateView, MailingUpdateView, MailingDeleteView,
-    AttemptListView, LaunchMailingView
+    AttemptListView, LaunchMailingView, ToggleMailingStatusView, MailingStatsView
 )
 
 from .views import (
@@ -42,6 +42,7 @@ urlpatterns = [
     path('mailings/<int:pk>/launch/', LaunchMailingView.as_view(), name='mailing-launch'),
 
     path('mailings/', MailingListView.as_view(), name='mailing-list'),
+    path('<int:pk>/stats/', MailingStatsView.as_view(), name='mailing-stats'),
 
     path('<int:pk>/', views.MailingDetailView.as_view(), name='mailing-detail'),
     path('<int:pk>/launch/', LaunchMailingView.as_view(), name='mailing-launch'),
@@ -50,4 +51,5 @@ urlpatterns = [
     path('attempts/', AttemptListView.as_view(), name='attempt-list'),
 
     path('', HomeView.as_view(), name='home'),
+    path('<int:pk>/toggle-status/', ToggleMailingStatusView.as_view(), name='mailing-toggle-status'),
 ]

@@ -5,7 +5,9 @@
 {% block content %}
   <h2>Ваши рассылки</h2>
 
-  <a href="{% url 'mailing:mailing-create' %}">Создать новую рассылку</a>
+  {% if not is_manager %}
+    <a href="{% url 'mailing:mailing-create' %}">Создать новую рассылку</a>
+  {% endif %}
 
   {% if object_list %}
     <ul>
@@ -14,13 +16,26 @@
           <strong>{{ mailing.message.subject }}</strong>
           — {{ mailing.status }}<br>
           {{ mailing.start_time|date:"Y-m-d H:i" }} — {{ mailing.end_time|date:"Y-m-d H:i" }}<br>
-          <a href="{% url 'mailing:mailing-detail' mailing.pk %}">Подробнее</a> |
-          <a href="{% url 'mailing:mailing-update' mailing.pk %}">Редактировать</a> |
-          <a href="{% url 'mailing:mailing-delete' mailing.pk %}">Удалить</a> |
-          <form action="{% url 'mailing:mailing-launch' mailing.pk %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Запустить</button>
-          </form>
+
+          <a href="{% url 'mailing:mailing-detail' mailing.pk %}">Подробнее</a>
+            | <a href="{% url 'mailing:mailing-stats' mailing.pk %}">Статистика</a>
+          {% if is_manager %}
+            | <form method="post" action="{% url 'mailing:mailing-toggle-status' mailing.pk %}?next={% url 'mailing:mailing-list' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: {% if mailing.is_active %}green{% else %}red{% endif %};">
+                  {% if mailing.is_active %}Отключить{% else %}Включить{% endif %}
+                </button>
+              </form>
+          {% endif %}
+
+          {% if not is_manager %}
+            | <a href="{% url 'mailing:mailing-update' mailing.pk %}">Редактировать</a>
+            | <a href="{% url 'mailing:mailing-delete' mailing.pk %}">Удалить</a>
+            | <form action="{% url 'mailing:mailing-launch' mailing.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Запустить</button>
+              </form>
+          {% endif %}
         </li>
       {% endfor %}
     </ul>

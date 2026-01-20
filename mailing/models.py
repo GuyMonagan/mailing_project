@@ -4,6 +4,7 @@ from django.utils import timezone
 
 
 class Recipient(models.Model):
+
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
     comment = models.TextField(blank=True, null=True)
@@ -18,7 +19,14 @@ class Recipient(models.Model):
         return f'{self.full_name} ({self.email})'
 
 
+    class Meta:
+        permissions = [
+            ("view_all_recipients", "Может просматривать всех получателей"),
+        ]
+
+
 class Message(models.Model):
+
     subject = models.CharField(max_length=255)
     body = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -27,7 +35,14 @@ class Message(models.Model):
         return self.subject
 
 
+    class Meta:
+        permissions = [
+            ("view_all_messages", "Может просматривать все сообщения"),
+        ]
+
+
 class Mailing(models.Model):
+
     STATUS_CHOICES = [
         ('Создана', 'Создана'),
         ('Запущена', 'Запущена'),
@@ -37,6 +52,9 @@ class Mailing(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Создана')
+
+    is_active = models.BooleanField(default=True, verbose_name="Активна")
+
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
     recipients = models.ManyToManyField(Recipient)
     owner = models.ForeignKey(
@@ -59,6 +77,12 @@ class Mailing(models.Model):
 
     def __str__(self):
         return f"{self.message.subject} ({self.status})"
+
+    class Meta:
+        permissions = [
+            ("view_all_mailings", "Может просматривать все рассылки"),
+            ("disable_mailings", "Может отключать рассылки"),
+        ]
 
 
 class Attempt(models.Model):
