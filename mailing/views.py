@@ -78,7 +78,7 @@ class ToggleMailingStatusView(LoginRequiredMixin, View):
 
 
 # -------- MESSAGE --------
-
+@method_decorator(cache_page(60 * 10), name='dispatch')
 class MessageListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     """
     Список сообщений рассылки.
@@ -132,7 +132,7 @@ class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 
 
 # -------- MAILING --------
-
+@method_decorator(cache_page(60 * 10), name='dispatch')
 class MailingListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     """
     Список всех рассылок.
@@ -339,6 +339,7 @@ class LaunchMailingView(LoginRequiredMixin, View):
 
 
 # -------- RECIPIENT --------
+@method_decorator(cache_page(60 * 10), name='dispatch')
 class RecipientListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     """
     Список получателей рассылки.
