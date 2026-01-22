@@ -249,7 +249,7 @@ class MailingDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, ManagerForbidde
 
 
 # -------- ATTEMPT --------
-
+@method_decorator(cache_page(15), name='dispatch')
 class AttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     """
     Список попыток отправки сообщений (Attempt).
